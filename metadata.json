@@ -1,0 +1,6 @@
+{
+  "name": "Beauty Studio",
+  "description": "Интернет-магазин косметики, средств ухода и парфюмерии с интерактивной 3D-витриной, каталогом, избранным и оформлением заказа.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
