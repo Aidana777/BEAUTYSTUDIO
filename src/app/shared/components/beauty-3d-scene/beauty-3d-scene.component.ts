@@ -170,6 +170,172 @@ function buildPlinth(radius = 1.65, height = 0.18, travertineTex: THREE.Texture)
   return group;
 }
 
+function buildHeroArchitecturalBlocks(): THREE.Group {
+  const group = new THREE.Group();
+  const blockMat = new THREE.MeshStandardMaterial({
+    color: new THREE.Color('#E3A6AF'),
+    roughness: 0.78,
+    metalness: 0.02,
+  });
+
+  // Low front-left pedestal block
+  const leftBlock = new THREE.Mesh(new THREE.BoxGeometry(1.45, 0.42, 1.05), blockMat);
+  leftBlock.position.set(-0.78, 0.21, 0.48);
+  leftBlock.castShadow = true;
+  leftBlock.receiveShadow = true;
+
+  // Tall mid-back architectural pillar
+  const centerPillar = new THREE.Mesh(new THREE.BoxGeometry(1.12, 1.48, 0.92), blockMat);
+  centerPillar.position.set(0.35, 0.74, -0.45);
+  centerPillar.castShadow = true;
+  centerPillar.receiveShadow = true;
+
+  // Medium right architectural block
+  const rightBlock = new THREE.Mesh(new THREE.BoxGeometry(1.15, 1.18, 1.02), blockMat);
+  rightBlock.position.set(1.52, 0.59, -0.15);
+  rightBlock.castShadow = true;
+  rightBlock.receiveShadow = true;
+
+  group.add(leftBlock, centerPillar, rightBlock);
+  return group;
+}
+
+function buildHeroMistBottle(colorHex: string, isSoftwareGl: boolean): THREE.Group {
+  const group = new THREE.Group();
+
+  const outerGlass = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.41, 0.41, 1.42, 48),
+    makeGlassMaterial(colorHex, isSoftwareGl, true),
+  );
+  outerGlass.position.y = 0.71;
+  outerGlass.castShadow = true;
+  outerGlass.renderOrder = 2;
+
+  const innerEssence = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.32, 0.32, 1.28, 36),
+    new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color('#EA958F'),
+      roughness: 0.22,
+      metalness: 0.02,
+      clearcoat: 0.4,
+    }),
+  );
+  innerEssence.position.y = 0.7;
+
+  const capMesh = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.415, 0.415, 0.78, 48),
+    new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#DC8C97'),
+      roughness: 0.48,
+      metalness: 0.04,
+    }),
+  );
+  capMesh.position.y = 1.81;
+  capMesh.castShadow = true;
+
+  group.add(innerEssence, outerGlass, capMesh);
+  return group;
+}
+
+function buildHeroSculptedLipstick(colorHex: string, isSoftwareGl: boolean): THREE.Group {
+  const group = new THREE.Group();
+
+  const acrylicBase = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.24, 0.24, 0.88, 40),
+    makeGlassMaterial('#F6C3CA', isSoftwareGl, false),
+  );
+  acrylicBase.position.y = 0.44;
+  acrylicBase.castShadow = true;
+  acrylicBase.renderOrder = 2;
+
+  const innerGlow = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.18, 0.18, 0.76, 32),
+    new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#F2B2BA'),
+      roughness: 0.3,
+    }),
+  );
+  innerGlow.position.y = 0.45;
+
+  const collar = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.245, 0.245, 0.26, 40),
+    new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#E07E8D'),
+      roughness: 0.42,
+      metalness: 0.08,
+    }),
+  );
+  collar.position.y = 1.01;
+  collar.castShadow = true;
+
+  const sleeve = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.2, 0.2, 0.28, 40),
+    new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#EB9AA6'),
+      roughness: 0.45,
+      metalness: 0.05,
+    }),
+  );
+  sleeve.position.y = 1.28;
+  sleeve.castShadow = true;
+
+  const bulletMat = new THREE.MeshPhysicalMaterial({
+    color: new THREE.Color(colorHex),
+    roughness: 0.32,
+    metalness: 0.02,
+    clearcoat: 0.28,
+  });
+
+  const bullet = new THREE.Mesh(new THREE.CylinderGeometry(0.155, 0.175, 0.46, 36), bulletMat);
+  bullet.position.y = 1.62;
+  bullet.castShadow = true;
+
+  const angledTip = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.155, 0.22, 36), bulletMat);
+  angledTip.position.set(0, 1.92, 0.01);
+  angledTip.rotation.x = 0.42;
+  angledTip.scale.set(1, 1, 0.78);
+
+  group.add(innerGlow, acrylicBase, collar, sleeve, bullet, angledTip);
+  return group;
+}
+
+function buildCompactBlush(colorHex: string, isSoftwareGl: boolean): THREE.Group {
+  const group = new THREE.Group();
+
+  const baseTray = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.56, 0.54, 0.16, 48),
+    makeGlassMaterial('#F5BDC6', isSoftwareGl, false),
+  );
+  baseTray.position.y = 0.08;
+  baseTray.castShadow = true;
+  baseTray.receiveShadow = true;
+
+  const powderPan = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.47, 0.47, 0.07, 48),
+    new THREE.MeshStandardMaterial({
+      color: new THREE.Color(colorHex),
+      roughness: 0.62,
+      metalness: 0.02,
+    }),
+  );
+  powderPan.position.y = 0.145;
+
+  const lidPivot = new THREE.Group();
+  lidPivot.position.set(0, 0.17, -0.52);
+  lidPivot.rotation.x = -0.38;
+
+  const lidDisc = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.55, 0.55, 0.08, 48),
+    makeGlassMaterial('#F8CDD4', isSoftwareGl, true),
+  );
+  lidDisc.position.set(0, 0.04, 0.52);
+  lidDisc.castShadow = true;
+  lidPivot.add(lidDisc);
+
+  group.add(baseTray, powderPan, lidPivot);
+  return group;
+}
+
 function buildSerumBottle(
   colorHex: string,
   accentHex: string,
@@ -632,69 +798,87 @@ export class Beauty3dSceneComponent implements AfterViewInit, OnChanges, OnDestr
       container.appendChild(renderer.domElement);
 
       const scene = new THREE.Scene();
-      const bgHex =
-        this.mode === 'hero' ? '#F8EEF0' : this.mode === 'promo' ? '#F2EFF7' : '#FBF9F6';
-      scene.background = new THREE.Color(bgHex);
-      scene.fog = new THREE.FogExp2(bgHex, 0.045);
+      if (this.mode === 'hero') {
+        scene.background = null;
+      } else {
+        const bgHex = this.mode === 'promo' ? '#F2EFF7' : '#FBF9F6';
+        scene.background = new THREE.Color(bgHex);
+        scene.fog = new THREE.FogExp2(bgHex, 0.045);
+      }
 
       const pmremGenerator = new THREE.PMREMGenerator(renderer);
       const envTarget = pmremGenerator.fromScene(new RoomEnvironment(), 0.04);
       scene.environment = envTarget.texture;
       pmremGenerator.dispose();
 
-      const camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 40);
+      const camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 40);
       if (this.mode === 'hero') {
-        camera.position.set(0.2, 2.35, 5.4);
+        camera.position.set(-0.15, 1.58, 5.75);
       } else if (this.mode === 'promo') {
         camera.position.set(0.4, 2.0, 4.4);
       } else {
         camera.position.set(0.2, 1.85, 4.1);
       }
 
-      const hemiLight = new THREE.HemisphereLight(0xf6f3ff, 0xe8d9d2, 0.85);
+      const hemiLight = new THREE.HemisphereLight(0xfff1f3, 0xd89aa3, this.mode === 'hero' ? 1.05 : 0.85);
       scene.add(hemiLight);
 
-      const keyLight = new THREE.DirectionalLight(0xfff4e6, 2.2);
-      keyLight.position.set(3.5, 5.5, 4.2);
+      const keyLight = new THREE.DirectionalLight(0xfff5ec, this.mode === 'hero' ? 2.5 : 2.2);
+      keyLight.position.set(3.2, 5.8, 4.5);
       keyLight.castShadow = !isSoftwareGl;
       keyLight.shadow.mapSize.width = 1024;
       keyLight.shadow.mapSize.height = 1024;
       keyLight.shadow.camera.near = 0.5;
       keyLight.shadow.camera.far = 16;
-      keyLight.shadow.camera.left = -3;
-      keyLight.shadow.camera.right = 3;
-      keyLight.shadow.camera.top = 3;
-      keyLight.shadow.camera.bottom = -3;
+      keyLight.shadow.camera.left = -4;
+      keyLight.shadow.camera.right = 4;
+      keyLight.shadow.camera.top = 4;
+      keyLight.shadow.camera.bottom = -4;
       keyLight.shadow.bias = -0.0005;
       scene.add(keyLight);
 
-      const rimLight = new THREE.DirectionalLight(0xfcd9e5, 1.15);
-      rimLight.position.set(-4, 3.2, -3.5);
+      const rimLight = new THREE.DirectionalLight(0xfde2e7, 1.2);
+      rimLight.position.set(-4.2, 3.0, -3.0);
       scene.add(rimLight);
 
       const travertineTex = createTravertineTexture();
       travertineTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
       const shadowTex = createContactShadowTexture();
-      const shadowPlane = new THREE.Mesh(
-        new THREE.PlaneGeometry(4.4, 4.4),
-        new THREE.MeshBasicMaterial({
-          map: shadowTex,
-          transparent: true,
-          depthWrite: false,
-          opacity: 0.75,
-        }),
-      );
-      shadowPlane.rotation.x = -Math.PI / 2;
-      shadowPlane.position.y = 0.005;
-      scene.add(shadowPlane);
+      if (this.mode === 'hero') {
+        const floorShadowPlane = new THREE.Mesh(
+          new THREE.PlaneGeometry(12, 12),
+          new THREE.ShadowMaterial({ opacity: 0.14 }),
+        );
+        floorShadowPlane.rotation.x = -Math.PI / 2;
+        floorShadowPlane.position.y = 0.002;
+        floorShadowPlane.receiveShadow = true;
+        scene.add(floorShadowPlane);
+      } else {
+        const shadowPlane = new THREE.Mesh(
+          new THREE.PlaneGeometry(4.4, 4.4),
+          new THREE.MeshBasicMaterial({
+            map: shadowTex,
+            transparent: true,
+            depthWrite: false,
+            opacity: 0.75,
+          }),
+        );
+        shadowPlane.rotation.x = -Math.PI / 2;
+        shadowPlane.position.y = 0.005;
+        scene.add(shadowPlane);
+      }
 
       const stageGroup = new THREE.Group();
       scene.add(stageGroup);
 
-      const plinthRadius = this.mode === 'hero' ? 1.8 : 1.3;
-      const plinthHeight = 0.18;
-      stageGroup.add(buildPlinth(plinthRadius, plinthHeight, travertineTex));
+      const plinthHeight = this.mode === 'hero' ? 0 : 0.18;
+      if (this.mode === 'hero') {
+        stageGroup.add(buildHeroArchitecturalBlocks());
+      } else {
+        const plinthRadius = 1.3;
+        stageGroup.add(buildPlinth(plinthRadius, plinthHeight, travertineTex));
+      }
 
       const animatedObjects: THREE.Group[] = [];
       const partBaselines = new Map<THREE.Object3D, number>();
@@ -706,43 +890,43 @@ export class Beauty3dSceneComponent implements AfterViewInit, OnChanges, OnDestr
 
       if (this.mode === 'hero') {
         if (this.heroComposition === 'ritual') {
-          const serum = buildSerumBottle('#E8B4BE', '#D4AF37', 'Aura Luxe', 'Rose Quartz', isSoftwareGl);
-          serum.position.set(-0.55, plinthHeight, 0.15);
-          serum.scale.setScalar(0.95);
+          const lipstick = buildHeroSculptedLipstick('#F29BA7', isSoftwareGl);
+          lipstick.position.set(-0.22, 0, 0.92);
+          lipstick.scale.setScalar(0.98);
 
-          const cream = buildCreamJar('#F0D5DC', '#C5A059', 'Aura Luxe', 'Ceramide Cream', isSoftwareGl);
-          cream.position.set(0.62, plinthHeight, 0.35);
-          cream.scale.setScalar(0.86);
+          const mistBottle = buildHeroMistBottle('#F0A6AE', isSoftwareGl);
+          mistBottle.position.set(0.88, 0.02, 0.28);
+          mistBottle.scale.setScalar(1.06);
 
-          const flacon = buildFragranceFlacon('#F3C7BB', '#D89C82', 'Maison Rosé', 'Rose Crystal', isSoftwareGl);
-          flacon.position.set(0.12, plinthHeight, -0.45);
-          flacon.scale.setScalar(0.92);
+          const compact = buildCompactBlush('#EE96A3', isSoftwareGl);
+          compact.position.set(0.45, 0.02, 1.15);
+          compact.scale.setScalar(0.92);
 
-          stageGroup.add(serum, cream, flacon);
-          animatedObjects.push(serum, cream, flacon);
+          stageGroup.add(lipstick, mistBottle, compact);
+          animatedObjects.push(lipstick, mistBottle, compact);
         } else if (this.heroComposition === 'fragrance') {
           const flacon = buildFragranceFlacon('#F3C7BB', '#D89C82', 'Maison Rosé', 'Rose Crystal', isSoftwareGl);
-          flacon.position.set(-0.15, plinthHeight, 0.05);
-          flacon.scale.setScalar(1.12);
+          flacon.position.set(-0.08, 0.04, 0.72);
+          flacon.scale.setScalar(1.16);
 
           const elixir = buildElixirBottle('#DFD2EA', '#C5A059', 'Maison Rosé', 'Velvet Iris', isSoftwareGl);
-          elixir.position.set(0.82, plinthHeight, -0.2);
-          elixir.scale.setScalar(0.82);
+          elixir.position.set(0.95, 0.04, 0.35);
+          elixir.scale.setScalar(0.95);
 
           stageGroup.add(flacon, elixir);
           animatedObjects.push(flacon, elixir);
         } else {
-          const lip1 = buildLipstick('#C2747D', '#D5B26E');
-          lip1.position.set(-0.48, plinthHeight, 0.15);
-          lip1.scale.setScalar(0.98);
+          const lip1 = buildHeroSculptedLipstick('#D94A64', isSoftwareGl);
+          lip1.position.set(-0.26, 0, 0.88);
+          lip1.scale.setScalar(1.02);
 
-          const lip2 = buildLipstick('#E05749', '#D5B26E');
-          lip2.position.set(0.18, plinthHeight, 0.32);
+          const lip2 = buildHeroSculptedLipstick('#E98C98', isSoftwareGl);
+          lip2.position.set(0.32, 0, 0.65);
           lip2.scale.setScalar(0.92);
 
-          const compact = buildCreamJar('#F4EAE3', '#C5A059', 'Velvet Bloom', 'Silk Blush', isSoftwareGl);
-          compact.position.set(0.75, plinthHeight, -0.35);
-          compact.scale.setScalar(0.8);
+          const compact = buildCompactBlush('#E27A8A', isSoftwareGl);
+          compact.position.set(0.92, 0.02, 0.95);
+          compact.scale.setScalar(0.96);
 
           stageGroup.add(lip1, lip2, compact);
           animatedObjects.push(lip1, lip2, compact);
@@ -870,12 +1054,12 @@ export class Beauty3dSceneComponent implements AfterViewInit, OnChanges, OnDestr
 
         if (!prefersReducedMotion) {
           if (this.mode === 'hero') {
-            const targetRotY = pointerX * 0.24 + Math.sin(elapsed * 0.45) * 0.16;
-            const targetRotX = pointerY * 0.07;
+            const targetRotY = pointerX * 0.16 + Math.sin(elapsed * 0.4) * 0.08;
+            const targetRotX = pointerY * 0.04;
             stageGroup.rotation.y = THREE.MathUtils.damp(stageGroup.rotation.y, targetRotY, 3.5, dt);
             stageGroup.rotation.x = THREE.MathUtils.damp(stageGroup.rotation.x, targetRotX, 3.5, dt);
             animatedObjects.forEach((obj, idx) => {
-              obj.position.y = plinthHeight + Math.sin(elapsed * 1.1 + idx * 1.3) * 0.025;
+              obj.position.y = 0.02 + Math.abs(Math.sin(elapsed * 0.9 + idx * 1.1)) * 0.015;
             });
           } else {
             stageGroup.rotation.y += dt * 0.28;

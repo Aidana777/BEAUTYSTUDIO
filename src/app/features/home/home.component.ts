@@ -21,117 +21,204 @@ const PROMO_FINISHES = [
   imports: [RouterLink, Beauty3dSceneComponent, ProductCardComponent],
   template: `
     <div class="bg-[#FBF9F6]">
-      <!-- 1. HERO SECTION -->
-      <section class="border-b border-[#1C1A1D]/8 bg-gradient-to-br from-[#FBF9F6] via-[#F9F1F3] to-[#F2EFF7]">
-        <div class="mx-auto max-w-[1280px] px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-          <div class="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-12 lg:gap-10">
-            <!-- Left Copy Column -->
-            <div #heroTextRef class="flex flex-col justify-center lg:col-span-6 lg:py-6">
-              <p class="hero-stagger text-xs font-semibold uppercase tracking-[0.16em] text-[#D94A64]">
-                Beauty Studio · Косметика и уход
-              </p>
+      <!-- 1. FULL-BLEED EDITORIAL SUNLIT STUDIO HERO -->
+      <section
+        class="relative overflow-hidden border-b border-[#1C1A1D]/8"
+        style="background: linear-gradient(125deg, #CF8893 0%, #DE9DA7 42%, #ECC1C7 76%, #F6D8DC 100%);"
+      >
+        <!-- Diagonal Sunlight Beams -->
+        <div
+          aria-hidden="true"
+          class="pointer-events-none absolute -top-24 left-[22%] h-[140%] w-48 -rotate-[24deg] bg-gradient-to-b from-white/25 via-white/10 to-transparent blur-[1px]"
+        ></div>
+        <div
+          aria-hidden="true"
+          class="pointer-events-none absolute -top-24 left-[52%] h-[140%] w-72 -rotate-[24deg] bg-gradient-to-b from-white/18 via-white/8 to-transparent blur-[2px]"
+        ></div>
+        <div
+          aria-hidden="true"
+          class="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#F4CED4]/85 to-transparent"
+        ></div>
 
-              <h1
-                class="hero-stagger mt-4 font-display font-semibold leading-[1.08] tracking-tight text-[#1C1A1D]"
-                style="font-size: clamp(2.35rem, 4.2vw, 3.85rem); text-wrap: balance;"
+        <!-- Full-bleed Three.js Studio Stage on Desktop Right -->
+        <div class="hidden lg:block lg:absolute lg:inset-y-0 lg:right-0 lg:w-[64%] lg:pt-10">
+          <app-beauty-3d-scene
+            mode="hero"
+            [heroComposition]="heroSceneMode()"
+            [fallbackImage]="skincareFallback"
+            fallbackAlt="3D-композиция косметических средств Beauty Studio"
+          />
+        </div>
+
+        <div class="relative z-10 mx-auto flex min-h-[600px] max-w-[1280px] flex-col justify-between px-4 pt-24 pb-8 sm:px-6 lg:min-h-[680px] lg:px-8 lg:pt-28 lg:pb-10">
+          <!-- Top Headline + CTA -->
+          <div #heroTextRef class="max-w-xl">
+            <h1
+              class="hero-stagger font-display font-bold uppercase leading-[0.94] tracking-tight text-white drop-shadow-[0_2px_12px_rgba(120,45,60,0.18)]"
+              style="font-size: clamp(3rem, 6.2vw, 5.25rem); text-wrap: balance;"
+            >
+              Твоя красота.<br />Твои правила.
+            </h1>
+
+            <div class="hero-stagger mt-6 flex flex-wrap items-center gap-4">
+              <button
+                type="button"
+                (click)="productService.openCatalogWith({})"
+                class="inline-flex h-11 items-center gap-2 rounded-sm bg-[#EE6473] px-6 text-xs font-semibold uppercase tracking-wider text-white shadow-sm transition-colors duration-150 hover:bg-[#D94A64] whitespace-nowrap shrink-0 cursor-pointer sm:text-sm"
               >
-                Твоя красота. Твои правила.
-              </h1>
+                <span>Смотреть каталог</span>
+              </button>
 
-              <p class="hero-stagger mt-5 max-w-xl text-base leading-relaxed text-[#4B4449] sm:text-lg">
-                Открой коллекцию косметики для ухода, макияжа и маленьких ежедневных ритуалов. Найди средства, которые подходят именно тебе.
-              </p>
-
-              <div class="hero-stagger mt-8 flex flex-wrap items-center gap-3.5">
-                <button
-                  type="button"
-                  (click)="productService.openCatalogWith({})"
-                  class="inline-flex h-12 items-center gap-2 rounded-lg bg-[#D94A64] px-6 text-sm font-semibold text-white transition-colors duration-150 hover:bg-[#BF3851] whitespace-nowrap shrink-0 cursor-pointer"
-                >
-                  <span>Смотреть каталог</span>
-                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </button>
-
-                <button
-                  type="button"
-                  (click)="productService.openCatalogWith({ onlyNew: true })"
-                  class="inline-flex h-12 items-center gap-2 rounded-lg border border-[#1C1A1D]/20 bg-white px-6 text-sm font-semibold text-[#1C1A1D] transition-colors duration-150 hover:border-[#D94A64] hover:text-[#D94A64] whitespace-nowrap shrink-0 cursor-pointer"
-                >
-                  <span>Открыть новинки</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Right Interactive 3D Stage -->
-            <div class="relative flex min-h-[380px] flex-col overflow-hidden rounded-2xl border border-[#1C1A1D]/10 bg-[#F8EEF0] lg:col-span-6 lg:min-h-[480px]">
-              <div class="h-full min-h-[380px] w-full flex-1 lg:min-h-[480px]">
-                <app-beauty-3d-scene
-                  mode="hero"
-                  [heroComposition]="heroSceneMode()"
-                  [fallbackImage]="skincareFallback"
-                  fallbackAlt="3D-композиция косметических средств Beauty Studio"
-                />
-              </div>
-
-              <div class="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-xl border border-[#1C1A1D]/10 bg-white/95 p-1 shadow-md">
-                @for (comp of heroCompositions; track comp.id) {
-                  <button
-                    type="button"
-                    (click)="heroSceneMode.set(comp.id)"
-                    class="rounded-lg px-3 py-1.5 text-xs font-medium whitespace-nowrap shrink-0 transition-colors cursor-pointer"
-                    [class]="
-                      heroSceneMode() === comp.id
-                        ? 'bg-[#1C1A1D] text-white'
-                        : 'text-[#4B4449] hover:bg-[#F8EEF0] hover:text-[#1C1A1D]'
-                    "
-                  >
-                    {{ comp.label }}
-                  </button>
-                }
-              </div>
+              <button
+                type="button"
+                (click)="productService.openCatalogWith({ onlyNew: true })"
+                class="inline-flex h-11 items-center gap-1.5 rounded-sm border border-white/55 bg-white/15 px-5 text-xs font-semibold text-white transition-colors duration-150 hover:bg-white hover:text-[#1C1A1D] whitespace-nowrap shrink-0 cursor-pointer sm:text-sm"
+              >
+                <span>Открыть новинки</span>
+                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
           </div>
 
-          <!-- 4-Column Studio Strip -->
-          <div class="mt-8 grid grid-cols-2 gap-4 border-t border-[#1C1A1D]/10 pt-6 md:grid-cols-4">
-            <div>
-              <p class="tabular-nums font-display text-2xl font-semibold text-[#1C1A1D]">
-                {{ productService.allProducts.length }} позиций
+          <!-- Mobile / Tablet 3D Stage -->
+          <div class="my-6 h-[300px] w-full sm:h-[360px] lg:hidden">
+            <app-beauty-3d-scene
+              mode="hero"
+              [heroComposition]="heroSceneMode()"
+              [fallbackImage]="skincareFallback"
+              fallbackAlt="3D-композиция косметических средств Beauty Studio"
+            />
+          </div>
+
+          <!-- Bottom Hero Row: Left Copy + Real Catalog Highlight | Center 3D Switcher | Right Floating Spotlight Card -->
+          <div class="mt-auto flex flex-col justify-between gap-6 pt-6 lg:flex-row lg:items-end">
+            <!-- Bottom-Left Editorial Copy & Real Thumbnails -->
+            <div class="max-w-xs space-y-5">
+              <p class="text-sm leading-relaxed text-white/95 drop-shadow-[0_1px_6px_rgba(110,40,55,0.18)]">
+                Открой коллекцию косметики для ухода, макияжа и маленьких ежедневных ритуалов. Найди средства, которые подходят именно тебе.
               </p>
-              <p class="mt-0.5 text-xs text-[#665E64]">
-                Демонстрационный каталог с фильтрами
-              </p>
+
+              <div class="flex items-center gap-4">
+                <div class="flex -space-x-2.5">
+                  <img
+                    [src]="categoryImages.skincare"
+                    alt="Уход за лицом"
+                    referrerPolicy="no-referrer"
+                    class="h-9 w-9 rounded-full border-2 border-white object-cover shadow-sm"
+                  />
+                  <img
+                    [src]="categoryImages.makeup"
+                    alt="Макияж"
+                    referrerPolicy="no-referrer"
+                    class="h-9 w-9 rounded-full border-2 border-white object-cover shadow-sm"
+                  />
+                  <img
+                    [src]="categoryImages.fragrance"
+                    alt="Парфюмерия"
+                    referrerPolicy="no-referrer"
+                    class="h-9 w-9 rounded-full border-2 border-white object-cover shadow-sm"
+                  />
+                </div>
+                <div class="text-white">
+                  <p class="tabular-nums text-sm font-bold leading-tight">
+                    {{ productService.allProducts.length }} средств · {{ productService.categories.length }} категорий
+                  </p>
+                  <p class="mt-0.5 text-xs text-white/90">
+                    Интерактивный 3D-обзор
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p class="tabular-nums font-display text-2xl font-semibold text-[#1C1A1D]">
-                {{ productService.categories.length }} категорий
-              </p>
-              <p class="mt-0.5 text-xs text-[#665E64]">
-                Лицо, макияж, тело, волосы и ароматы
-              </p>
+
+            <!-- Center Compact 3D Scene Switcher -->
+            <div class="flex items-center gap-1 self-start rounded-sm bg-white/95 p-1 shadow-sm lg:self-end">
+              @for (comp of heroCompositions; track comp.id) {
+                <button
+                  type="button"
+                  (click)="heroSceneMode.set(comp.id)"
+                  class="rounded-sm px-3 py-1.5 text-xs font-semibold whitespace-nowrap shrink-0 transition-colors cursor-pointer"
+                  [class]="
+                    heroSceneMode() === comp.id
+                      ? 'bg-[#1C1A1D] text-white'
+                      : 'text-[#4B4449] hover:bg-[#F8EEF0] hover:text-[#1C1A1D]'
+                  "
+                >
+                  {{ comp.label }}
+                </button>
+              }
             </div>
-            <div>
-              <p class="font-display text-2xl font-semibold text-[#1C1A1D]">3D-обзор</p>
-              <p class="mt-0.5 text-xs text-[#665E64]">Интерактивные сцены на Three.js</p>
-            </div>
-            <div>
-              <p class="font-display text-2xl font-semibold text-[#1C1A1D]">Быстрый заказ</p>
-              <p class="mt-0.5 text-xs text-[#665E64]">Корзина, избранное и валидация формы</p>
+
+            <!-- Bottom-Right Floating Spotlight Card -->
+            <div class="w-full rounded-sm bg-white p-3.5 shadow-xl sm:w-[250px] shrink-0">
+              <div class="aspect-[16/10] w-full overflow-hidden rounded-sm bg-[#F8F5F0]">
+                <img
+                  [src]="categoryImages.makeup"
+                  alt="Элегантный макияж и ежедневный уход"
+                  referrerPolicy="no-referrer"
+                  class="h-full w-full object-cover"
+                />
+              </div>
+              <h2 class="mt-3 text-sm font-bold text-[#1C1A1D]">
+                Элегантный макияж и уход
+              </h2>
+              <p class="mt-1 text-xs leading-relaxed text-[#665E64]">
+                Подборка бархатных помад, румян и сывороток для сияния кожи.
+              </p>
+              <button
+                type="button"
+                (click)="productService.openCatalogWith({ categoryId: 2 })"
+                class="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-[#EE6473] transition-colors hover:text-[#D94A64] cursor-pointer"
+              >
+                <span>Открыть раздел</span>
+                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- 2. CATEGORIES SECTION -->
+      <!-- 2. STUDIO HIGHLIGHTS STRIP -->
+      <section class="border-b border-[#1C1A1D]/8 bg-white">
+        <div class="mx-auto grid max-w-[1280px] grid-cols-2 gap-6 px-4 py-6 sm:px-6 md:grid-cols-4 lg:px-8">
+          <div>
+            <p class="tabular-nums font-display text-2xl font-semibold text-[#1C1A1D]">
+              {{ productService.allProducts.length }} позиций
+            </p>
+            <p class="mt-0.5 text-xs text-[#665E64]">
+              Демонстрационный каталог с фильтрами
+            </p>
+          </div>
+          <div>
+            <p class="tabular-nums font-display text-2xl font-semibold text-[#1C1A1D]">
+              {{ productService.categories.length }} категорий
+            </p>
+            <p class="mt-0.5 text-xs text-[#665E64]">
+              Лицо, макияж, тело, волосы и ароматы
+            </p>
+          </div>
+          <div>
+            <p class="font-display text-2xl font-semibold text-[#1C1A1D]">3D-обзор</p>
+            <p class="mt-0.5 text-xs text-[#665E64]">Интерактивные сцены на Three.js</p>
+          </div>
+          <div>
+            <p class="font-display text-2xl font-semibold text-[#1C1A1D]">Быстрый заказ</p>
+            <p class="mt-0.5 text-xs text-[#665E64]">Корзина, избранное и валидация формы</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. CATEGORIES SECTION -->
       <section class="mx-auto max-w-[1280px] px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
         <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <p class="text-xs font-semibold uppercase tracking-[0.14em] text-[#665E64]">
               Разделы магазина
             </p>
-            <h2 class="mt-1.5 font-display text-3xl font-semibold text-[#1C1A1D] sm:text-4xl">
+            <h2 class="mt-1.5 font-display text-3xl font-semibold uppercase text-[#1C1A1D] sm:text-4xl">
               Категории каталога
             </h2>
           </div>
@@ -197,7 +284,7 @@ const PROMO_FINISHES = [
         </div>
       </section>
 
-      <!-- 3. TABBED SHOWCASE -->
+      <!-- 4. TABBED SHOWCASE -->
       <section class="border-y border-[#1C1A1D]/8 bg-white">
         <div class="mx-auto max-w-[1280px] px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
           <div class="flex flex-col justify-between gap-4 md:flex-row md:items-end">
@@ -205,7 +292,7 @@ const PROMO_FINISHES = [
               <p class="text-xs font-semibold uppercase tracking-[0.14em] text-[#665E64]">
                 Подборки каталога
               </p>
-              <h2 class="mt-1.5 font-display text-3xl font-semibold text-[#1C1A1D] sm:text-4xl">
+              <h2 class="mt-1.5 font-display text-3xl font-semibold uppercase text-[#1C1A1D] sm:text-4xl">
                 @if (showcaseTab() === 'new') {
                   Новинки коллекции
                 } @else if (showcaseTab() === 'bestsellers') {
@@ -255,7 +342,7 @@ const PROMO_FINISHES = [
         </div>
       </section>
 
-      <!-- 4. 3D PROMO RITUAL + BRANDS -->
+      <!-- 5. 3D PROMO RITUAL + BRANDS -->
       <section class="mx-auto max-w-[1280px] px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
         <div class="grid grid-cols-1 items-stretch overflow-hidden rounded-2xl border border-[#1C1A1D]/10 bg-[#F2EFF7] lg:grid-cols-12">
           <div class="relative min-h-[340px] lg:col-span-6 lg:min-h-[420px]">
@@ -304,7 +391,7 @@ const PROMO_FINISHES = [
             <div class="text-xs font-semibold uppercase tracking-[0.14em] text-[#D94A64]">
               3D-витрина продуктов
             </div>
-            <h2 class="mt-3 font-display text-3xl font-semibold text-[#1C1A1D]">
+            <h2 class="mt-3 font-display text-3xl font-semibold uppercase text-[#1C1A1D]">
               Изучите форму флаконов и текстуры до покупки
             </h2>
             <p class="mt-4 text-sm leading-relaxed text-[#4B4449] sm:text-base">
@@ -330,7 +417,7 @@ const PROMO_FINISHES = [
               <p class="text-xs font-semibold uppercase tracking-[0.14em] text-[#665E64]">
                 Демонстрационные бренды
               </p>
-              <h2 class="mt-1.5 font-display text-3xl font-semibold text-[#1C1A1D]">
+              <h2 class="mt-1.5 font-display text-3xl font-semibold uppercase text-[#1C1A1D]">
                 Бренды Beauty Studio
               </h2>
             </div>
@@ -382,12 +469,13 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('heroTextRef') heroTextRef?: ElementRef<HTMLDivElement>;
 
+  readonly categoryImages = CATEGORY_IMAGES;
   readonly skincareFallback = CATEGORY_IMAGES.skincare;
   readonly advantagesPreview = STORE_ADVANTAGES.slice(0, 2);
   readonly promoFinishes = PROMO_FINISHES;
 
   readonly heroCompositions: { id: 'ritual' | 'fragrance' | 'makeup'; label: string }[] = [
-    { id: 'ritual', label: 'Уход и аромат' },
+    { id: 'ritual', label: 'Уход и блеск' },
     { id: 'fragrance', label: 'Парфюмерия' },
     { id: 'makeup', label: 'Макияж' },
   ];

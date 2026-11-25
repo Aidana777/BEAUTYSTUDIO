@@ -1,6 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, HostListener, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { filter, map } from 'rxjs';
 import { CartService } from '../../../core/services/cart.service';
 import { ProductService } from '../../../core/services/product.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
@@ -10,140 +12,285 @@ import { WishlistService } from '../../../core/services/wishlist.service';
   standalone: true,
   imports: [RouterLink, FormsModule],
   template: `
-    <header class="sticky top-0 z-40 border-b border-[#1C1A1D]/10 bg-[#FBF9F6]/95">
+    <header
+      [class]="
+        isOverlayHero()
+          ? 'fixed inset-x-0 top-0 z-40 transition-colors duration-200'
+          : 'sticky top-0 z-40 border-b border-[#1C1A1D]/10 bg-[#FBF9F6]/95 transition-colors duration-200'
+      "
+    >
       <div class="mx-auto flex h-16 max-w-[1280px] items-center justify-between gap-4 px-4 sm:px-6 lg:gap-8 lg:px-8">
-        <!-- Zone 1: Single-line Wordmark -->
+        <!-- Zone 1: Brand Mark + Single-line Wordmark -->
         <a
           routerLink="/"
-          class="font-display text-xl font-semibold tracking-tight text-[#1C1A1D] whitespace-nowrap shrink-0 hover:text-[#D94A64] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#D94A64] sm:text-2xl"
+          class="flex items-center gap-2.5 whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#D94A64]"
+          [class]="isOverlayHero() ? 'text-white' : 'text-[#1C1A1D] hover:text-[#D94A64]'"
         >
-          Beauty Studio
+          <span
+            class="flex h-7 w-7 items-center justify-center rounded-sm transition-colors"
+            [class]="isOverlayHero() ? 'bg-white text-[#D96B78]' : 'bg-[#EE6473] text-white'"
+          >
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 3h6l-1 8h-4L9 3Z" />
+              <path d="M8 11h8v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-8Z" />
+            </svg>
+          </span>
+          <span class="font-display text-xl font-semibold uppercase tracking-wide sm:text-2xl">
+            Beauty Studio
+          </span>
         </a>
 
-        <!-- Zone 2: Single-line Nav Links -->
-        <nav aria-label="Основная навигация" class="hidden items-center gap-6 md:flex lg:gap-8">
-          <button
-            type="button"
-            (click)="openCatalogAll()"
-            class="relative py-1 text-sm font-medium whitespace-nowrap shrink-0 transition-colors duration-150 cursor-pointer"
-            [class]="isCatalogAllActive() ? 'text-[#D94A64]' : 'text-[#4B4449] hover:text-[#1C1A1D]'"
-          >
-            Каталог
-            @if (isCatalogAllActive()) {
-              <span class="absolute inset-x-0 -bottom-0.5 h-[2px] bg-[#D94A64]"></span>
-            }
-          </button>
+        <!-- Zone 2 + 3: On Home Hero Top -> Crisp White Floating Nav Bar matching Studio Reference -->
+        @if (isOverlayHero()) {
+          <div class="flex items-center gap-2 shrink-0">
+            <div class="hidden items-center gap-1 rounded-sm bg-white p-1.5 shadow-sm md:flex">
+              <nav aria-label="Основная навигация" class="flex items-center gap-5 px-3">
+                <button
+                  type="button"
+                  (click)="openCatalogAll()"
+                  class="text-xs font-semibold text-[#1C1A1D] whitespace-nowrap shrink-0 transition-colors hover:text-[#D94A64] cursor-pointer"
+                >
+                  Каталог
+                </button>
+                <button
+                  type="button"
+                  (click)="scrollToBrands()"
+                  class="text-xs font-semibold text-[#4B4449] whitespace-nowrap shrink-0 transition-colors hover:text-[#D94A64] cursor-pointer"
+                >
+                  Бренды
+                </button>
+                <button
+                  type="button"
+                  (click)="productService.openCatalogWith({ onlyNew: true })"
+                  class="text-xs font-semibold text-[#4B4449] whitespace-nowrap shrink-0 transition-colors hover:text-[#D94A64] cursor-pointer"
+                >
+                  Новинки
+                </button>
+                <a
+                  routerLink="/faq"
+                  class="text-xs font-semibold text-[#4B4449] whitespace-nowrap shrink-0 transition-colors hover:text-[#D94A64]"
+                >
+                  FAQ
+                </a>
+                <a
+                  routerLink="/about"
+                  class="text-xs font-semibold text-[#4B4449] whitespace-nowrap shrink-0 transition-colors hover:text-[#D94A64]"
+                >
+                  О нас
+                </a>
+              </nav>
 
-          <button
-            type="button"
-            (click)="scrollToBrands()"
-            class="relative py-1 text-sm font-medium text-[#4B4449] whitespace-nowrap shrink-0 transition-colors duration-150 hover:text-[#1C1A1D] cursor-pointer"
-          >
-            Бренды
-          </button>
+              <div class="h-5 w-px bg-[#1C1A1D]/10"></div>
 
-          <button
-            type="button"
-            (click)="productService.openCatalogWith({ onlyNew: true })"
-            class="relative py-1 text-sm font-medium whitespace-nowrap shrink-0 transition-colors duration-150 cursor-pointer"
-            [class]="isNewActive() ? 'text-[#D94A64]' : 'text-[#4B4449] hover:text-[#1C1A1D]'"
-          >
-            Новинки
-            @if (isNewActive()) {
-              <span class="absolute inset-x-0 -bottom-0.5 h-[2px] bg-[#D94A64]"></span>
-            }
-          </button>
+              <button
+                type="button"
+                (click)="toggleSearch()"
+                aria-label="Поиск по каталогу"
+                [attr.aria-expanded]="searchOpen()"
+                class="flex h-8 w-8 items-center justify-center rounded-sm text-[#1C1A1D] transition-colors hover:bg-[#F8EEF0] hover:text-[#D94A64] cursor-pointer"
+              >
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+              </button>
 
-          <button
-            type="button"
-            (click)="productService.openCatalogWith({ onlySale: true })"
-            class="relative py-1 text-sm font-medium whitespace-nowrap shrink-0 transition-colors duration-150 cursor-pointer"
-            [class]="isSaleActive() ? 'text-[#D94A64]' : 'text-[#4B4449] hover:text-[#1C1A1D]'"
-          >
-            Акции
-            @if (isSaleActive()) {
-              <span class="absolute inset-x-0 -bottom-0.5 h-[2px] bg-[#D94A64]"></span>
-            }
-          </button>
+              <a
+                routerLink="/wishlist"
+                [attr.aria-label]="'Избранное, товаров: ' + wishlistService.count()"
+                class="flex h-8 items-center gap-1 rounded-sm px-2 text-xs font-semibold text-[#1C1A1D] whitespace-nowrap shrink-0 transition-colors hover:bg-[#F8EEF0] hover:text-[#D94A64]"
+              >
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                </svg>
+                <span class="tabular-nums">{{ wishlistService.count() }}</span>
+              </a>
 
-          <a
-            routerLink="/about"
-            class="relative py-1 text-sm font-medium whitespace-nowrap shrink-0 transition-colors duration-150"
-            [class]="router.url.startsWith('/about') ? 'text-[#D94A64]' : 'text-[#4B4449] hover:text-[#1C1A1D]'"
-          >
-            О нас
-            @if (router.url.startsWith('/about')) {
-              <span class="absolute inset-x-0 -bottom-0.5 h-[2px] bg-[#D94A64]"></span>
-            }
-          </a>
-        </nav>
+              <button
+                type="button"
+                (click)="cartService.openDrawer()"
+                [attr.aria-label]="'Корзина, товаров: ' + cartService.totalCount()"
+                class="flex h-8 items-center gap-1.5 rounded-sm bg-[#EE6473] px-3.5 text-xs font-semibold uppercase tracking-wider text-white whitespace-nowrap shrink-0 transition-colors hover:bg-[#D94A64] cursor-pointer"
+              >
+                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                  <path d="M3 6h18" />
+                  <path d="M16 10a4 4 0 0 1-8 0" />
+                </svg>
+                <span>Корзина</span>
+                <span class="tabular-nums">({{ cartService.totalCount() }})</span>
+              </button>
+            </div>
 
-        <!-- Zone 3: Actions -->
-        <div class="flex items-center gap-2 shrink-0 sm:gap-3">
-          <button
-            type="button"
-            (click)="toggleSearch()"
-            aria-label="Поиск по каталогу"
-            [attr.aria-expanded]="searchOpen()"
-            class="flex h-10 w-10 items-center justify-center rounded-lg text-[#1C1A1D] transition-colors duration-150 hover:bg-[#F8EEF0] cursor-pointer"
-          >
-            <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-          </button>
+            <!-- Mobile actions on hero -->
+            <div class="flex items-center gap-1.5 rounded-sm bg-white p-1 shadow-sm md:hidden">
+              <button
+                type="button"
+                (click)="toggleSearch()"
+                aria-label="Поиск по каталогу"
+                class="flex h-9 w-9 items-center justify-center rounded-sm text-[#1C1A1D] cursor-pointer"
+              >
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                (click)="cartService.openDrawer()"
+                [attr.aria-label]="'Корзина, товаров: ' + cartService.totalCount()"
+                class="flex h-9 items-center gap-1 rounded-sm bg-[#EE6473] px-3 text-xs font-semibold text-white cursor-pointer"
+              >
+                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                  <path d="M3 6h18" />
+                  <path d="M16 10a4 4 0 0 1-8 0" />
+                </svg>
+                <span class="tabular-nums">{{ cartService.totalCount() }}</span>
+              </button>
+              <button
+                type="button"
+                (click)="mobileMenuOpen.set(!mobileMenuOpen())"
+                [attr.aria-label]="mobileMenuOpen() ? 'Закрыть меню' : 'Открыть меню'"
+                class="flex h-9 w-9 items-center justify-center rounded-sm text-[#1C1A1D] cursor-pointer"
+              >
+                @if (mobileMenuOpen()) {
+                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6 6 18M6 6l12 12" />
+                  </svg>
+                } @else {
+                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                }
+              </button>
+            </div>
+          </div>
+        } @else {
+          <!-- Standard Sticky Nav on Inner Pages & Scrolled Home -->
+          <nav aria-label="Основная навигация" class="hidden items-center gap-6 md:flex lg:gap-8">
+            <button
+              type="button"
+              (click)="openCatalogAll()"
+              class="relative py-1 text-sm font-medium whitespace-nowrap shrink-0 transition-colors duration-150 cursor-pointer"
+              [class]="isCatalogAllActive() ? 'text-[#D94A64]' : 'text-[#4B4449] hover:text-[#1C1A1D]'"
+            >
+              Каталог
+              @if (isCatalogAllActive()) {
+                <span class="absolute inset-x-0 -bottom-0.5 h-[2px] bg-[#D94A64]"></span>
+              }
+            </button>
 
-          <a
-            routerLink="/wishlist"
-            [attr.aria-label]="'Избранное, товаров: ' + wishlistService.count()"
-            class="relative flex h-10 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium whitespace-nowrap shrink-0 transition-colors duration-150"
-            [class]="router.url.startsWith('/wishlist') ? 'bg-[#F8EEF0] text-[#D94A64]' : 'text-[#1C1A1D] hover:bg-[#F8EEF0]'"
-          >
-            <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-            </svg>
-            <span class="tabular-nums text-xs font-semibold">{{ wishlistService.count() }}</span>
-          </a>
+            <button
+              type="button"
+              (click)="scrollToBrands()"
+              class="relative py-1 text-sm font-medium text-[#4B4449] whitespace-nowrap shrink-0 transition-colors duration-150 hover:text-[#1C1A1D] cursor-pointer"
+            >
+              Бренды
+            </button>
 
-          <button
-            type="button"
-            (click)="cartService.openDrawer()"
-            [attr.aria-label]="'Корзина, товаров: ' + cartService.totalCount()"
-            class="flex h-10 items-center gap-2 rounded-lg bg-[#1C1A1D] px-3.5 text-sm font-medium text-white whitespace-nowrap shrink-0 transition-colors duration-150 hover:bg-[#D94A64] cursor-pointer"
-          >
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-              <path d="M3 6h18" />
-              <path d="M16 10a4 4 0 0 1-8 0" />
-            </svg>
-            <span class="hidden sm:inline">Корзина</span>
-            <span class="tabular-nums text-xs font-semibold opacity-90">
-              {{ cartService.totalCount() }}
-            </span>
-          </button>
+            <button
+              type="button"
+              (click)="productService.openCatalogWith({ onlyNew: true })"
+              class="relative py-1 text-sm font-medium whitespace-nowrap shrink-0 transition-colors duration-150 cursor-pointer"
+              [class]="isNewActive() ? 'text-[#D94A64]' : 'text-[#4B4449] hover:text-[#1C1A1D]'"
+            >
+              Новинки
+              @if (isNewActive()) {
+                <span class="absolute inset-x-0 -bottom-0.5 h-[2px] bg-[#D94A64]"></span>
+              }
+            </button>
 
-          <button
-            type="button"
-            (click)="mobileMenuOpen.set(!mobileMenuOpen())"
-            [attr.aria-label]="mobileMenuOpen() ? 'Закрыть меню' : 'Открыть меню'"
-            [attr.aria-expanded]="mobileMenuOpen()"
-            class="flex h-10 w-10 items-center justify-center rounded-lg text-[#1C1A1D] hover:bg-[#F8EEF0] md:hidden cursor-pointer"
-          >
-            @if (mobileMenuOpen()) {
-              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 6 6 18M6 6l12 12" />
+            <button
+              type="button"
+              (click)="productService.openCatalogWith({ onlySale: true })"
+              class="relative py-1 text-sm font-medium whitespace-nowrap shrink-0 transition-colors duration-150 cursor-pointer"
+              [class]="isSaleActive() ? 'text-[#D94A64]' : 'text-[#4B4449] hover:text-[#1C1A1D]'"
+            >
+              Акции
+              @if (isSaleActive()) {
+                <span class="absolute inset-x-0 -bottom-0.5 h-[2px] bg-[#D94A64]"></span>
+              }
+            </button>
+
+            <a
+              routerLink="/about"
+              class="relative py-1 text-sm font-medium whitespace-nowrap shrink-0 transition-colors duration-150"
+              [class]="router.url.startsWith('/about') ? 'text-[#D94A64]' : 'text-[#4B4449] hover:text-[#1C1A1D]'"
+            >
+              О нас
+              @if (router.url.startsWith('/about')) {
+                <span class="absolute inset-x-0 -bottom-0.5 h-[2px] bg-[#D94A64]"></span>
+              }
+            </a>
+          </nav>
+
+          <div class="flex items-center gap-2 shrink-0 sm:gap-3">
+            <button
+              type="button"
+              (click)="toggleSearch()"
+              aria-label="Поиск по каталогу"
+              [attr.aria-expanded]="searchOpen()"
+              class="flex h-10 w-10 items-center justify-center rounded-lg text-[#1C1A1D] transition-colors duration-150 hover:bg-[#F8EEF0] cursor-pointer"
+            >
+              <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
               </svg>
-            } @else {
-              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 6h16M4 12h16M4 18h16" />
+            </button>
+
+            <a
+              routerLink="/wishlist"
+              [attr.aria-label]="'Избранное, товаров: ' + wishlistService.count()"
+              class="relative flex h-10 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium whitespace-nowrap shrink-0 transition-colors duration-150"
+              [class]="router.url.startsWith('/wishlist') ? 'bg-[#F8EEF0] text-[#D94A64]' : 'text-[#1C1A1D] hover:bg-[#F8EEF0]'"
+            >
+              <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
               </svg>
-            }
-          </button>
-        </div>
+              <span class="tabular-nums text-xs font-semibold">{{ wishlistService.count() }}</span>
+            </a>
+
+            <button
+              type="button"
+              (click)="cartService.openDrawer()"
+              [attr.aria-label]="'Корзина, товаров: ' + cartService.totalCount()"
+              class="flex h-10 items-center gap-2 rounded-lg bg-[#EE6473] px-3.5 text-sm font-semibold text-white whitespace-nowrap shrink-0 transition-colors duration-150 hover:bg-[#D94A64] cursor-pointer"
+            >
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                <path d="M3 6h18" />
+                <path d="M16 10a4 4 0 0 1-8 0" />
+              </svg>
+              <span class="hidden sm:inline">Корзина</span>
+              <span class="tabular-nums text-xs font-semibold opacity-95">
+                {{ cartService.totalCount() }}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              (click)="mobileMenuOpen.set(!mobileMenuOpen())"
+              [attr.aria-label]="mobileMenuOpen() ? 'Закрыть меню' : 'Открыть меню'"
+              [attr.aria-expanded]="mobileMenuOpen()"
+              class="flex h-10 w-10 items-center justify-center rounded-lg text-[#1C1A1D] hover:bg-[#F8EEF0] md:hidden cursor-pointer"
+            >
+              @if (mobileMenuOpen()) {
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              } @else {
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              }
+            </button>
+          </div>
+        }
       </div>
 
       @if (searchOpen()) {
-        <div class="border-t border-[#1C1A1D]/10 bg-white px-4 py-3 sm:px-6">
+        <div class="border-t border-[#1C1A1D]/10 bg-white px-4 py-3 shadow-md sm:px-6">
           <form (ngSubmit)="submitSearch()" class="mx-auto flex max-w-[1280px] items-center gap-3">
             <svg class="h-4 w-4 shrink-0 text-[#665E64]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="11" cy="11" r="8" />
@@ -176,7 +323,7 @@ import { WishlistService } from '../../../core/services/wishlist.service';
       }
 
       @if (mobileMenuOpen()) {
-        <div class="border-t border-[#1C1A1D]/10 bg-[#FBF9F6] px-4 py-4 md:hidden">
+        <div class="border-t border-[#1C1A1D]/10 bg-[#FBF9F6] px-4 py-4 shadow-md md:hidden">
           <nav aria-label="Мобильное меню" class="flex flex-col gap-1">
             <a
               routerLink="/"
@@ -206,6 +353,13 @@ import { WishlistService } from '../../../core/services/wishlist.service';
             >
               Акции
             </button>
+            <a
+              routerLink="/wishlist"
+              (click)="mobileMenuOpen.set(false)"
+              class="rounded-lg px-3 py-2.5 text-left text-sm font-medium text-[#1C1A1D] hover:bg-[#F8EEF0]"
+            >
+              Избранное ({{ wishlistService.count() }})
+            </a>
             <a
               routerLink="/about"
               (click)="mobileMenuOpen.set(false)"
@@ -241,7 +395,27 @@ export class HeaderComponent {
 
   readonly searchOpen = signal(false);
   readonly mobileMenuOpen = signal(false);
+  readonly scrolledPastHero = signal(false);
   searchInput = '';
+
+  private readonly currentUrl = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map((e) => e.urlAfterRedirects),
+    ),
+    { initialValue: this.router.url },
+  );
+
+  readonly isOverlayHero = computed(() => {
+    const cleanPath = (this.currentUrl() || '/').split('?')[0].split('#')[0];
+    const isHome = cleanPath === '/' || cleanPath === '';
+    return isHome && !this.scrolledPastHero();
+  });
+
+  @HostListener('window:scroll')
+  onScroll(): void {
+    this.scrolledPastHero.set(window.scrollY > 40);
+  }
 
   isCatalogAllActive(): boolean {
     return (
